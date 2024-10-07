@@ -2,7 +2,7 @@
 FROM golang:1.23.2-alpine
 
 # 作業ディレクトリを設定
-WORKDIR /app
+WORKDIR /workspace
 
 # Goモジュールファイルをコピーして依存関係をダウンロード
 COPY go.mod ./
