@@ -8,6 +8,8 @@ services:
       - db
     environment:
       - MONGO_URL="mongodb://mongo:27017"
+    volumes:
+      - .:/app
   db:
     image: mongo:latest
     container_name: mongo

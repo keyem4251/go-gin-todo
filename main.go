@@ -28,13 +28,17 @@ func main() {
 	r := gin.Default()
 
 	// MongoDBに接続
-	_, err := connectMongoDB()
+	var err error
+	client, err = connectMongoDB()
 	if err != nil {
 		log.Fatal("MongoDB接続エラー:", err)
 	}
 
-	// エンドポイントの定義
-	r.POST("/todos", createToDo)
+	// // エンドポイントの定義
+	// r.POST("/todos", createToDo)
+	r.GET("/ping", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, "OK")
+	})
 
 	// サーバーを起動
 	r.Run()
@@ -47,20 +51,23 @@ func connectMongoDB() (*mongo.Client, error) {
 
 	// MongoDBに接続
 	// コンテナ内のMongoDBに接続
-	clientOptions := options.Client().ApplyURI(os.Getenv("MONGO_URL"))
-	client, err := mongo.Connect(ctx, clientOptions)
+	url := os.Getenv("MONGO_URL")
+	log.Println(url)
+	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017")
+	log.Println(clientOptions.GetURI())
+	c, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		return nil, err
 	}
 
 	// 接続確認
-	pingErr := client.Ping(ctx, nil)
+	pingErr := c.Ping(ctx, nil)
 	if pingErr != nil {
 		return nil, pingErr
 	}
 
 	fmt.Println("MongoDBに接続")
-	return client, nil
+	return c, nil
 }
 
 func createToDo(c *gin.Context) {
