@@ -2,5 +2,10 @@
 	"name": "Go Gin + MongoDB DevContainer",
 	"dockerComposeFile": ["../compose.yaml"],
 	"service": "app",
-	"workspaceFolder": "/workspace"
+	"workspaceFolder": "/workspace",
+	"customizations": {
+		"vscode": {
+			"extensions": ["golang.go"]
+		}
+	}
 }

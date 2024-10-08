@@ -1,6 +1,8 @@
 # ベースイメージを指定（Go 1.21以上）
 FROM golang:1.23.2-alpine
 
+RUN go install github.com/air-verse/air@latest
+
 # 作業ディレクトリを設定
 WORKDIR /workspace
 
@@ -12,8 +14,5 @@ RUN go mod download
 # ソースコードをコンテナにコピー
 COPY . .
 
-# アプリケーションをビルド
-RUN go build -o /todo-app
-
 # アプリケーションを実行
-CMD ["/todo-app"]
+CMD ["air"]
