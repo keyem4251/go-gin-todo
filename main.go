@@ -2,17 +2,23 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var client *mongo.Client
+
+type Todo struct {
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Title     string             `json:"title" bson:"title"`
+	Completed bool               `json:"completed" bson:"completed"`
+}
 
 func main() {
 	// MongoDBに接続
@@ -37,7 +43,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("MongoDB接続に失敗しました: %v", err)
 	}
-	fmt.Println("MongoDBに正常に接続されました！")
 
 	// Ginのデフォルトルーターを作成
 	r := gin.Default()
@@ -49,6 +54,29 @@ func main() {
 		})
 	})
 
+	r.POST("/todos", createTodo)
+
 	// サーバーをポート8080で起動
 	r.Run(":8080")
+}
+
+// todoを作成
+func createTodo(c *gin.Context) {
+	var todo Todo
+
+	if err := c.BindJSON(&todo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "無効な入力"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	collection := client.Database("todoapp").Collection("todos")
+	result, err := collection.InsertOne(ctx, todo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Todo作成中にエラー"})
+		return
+	}
+	c.JSON(http.StatusOK, result)
 }
