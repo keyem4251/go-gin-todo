@@ -6,8 +6,6 @@ services:
       - "8080:8080"
     depends_on:
       - db
-    environment:
-      - MONGO_URL="mongodb://mongo:27017"
     volumes:
       - .:/workspace:cached
     command: air
