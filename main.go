@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -55,6 +56,7 @@ func main() {
 	})
 
 	r.POST("/todos", createTodo)
+	r.GET("/todos", getTodos)
 
 	// サーバーをポート8080で起動
 	r.Run(":8080")
@@ -79,4 +81,24 @@ func createTodo(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+func getTodos(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	collection := client.Database("todoapp").Collection("todos")
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Todo取得中にエラー"})
+		return
+	}
+	defer cursor.Close(ctx)
+
+	var todos []Todo
+	if err := cursor.All(ctx, &todos); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Todo解析中にエラー"})
+		return
+	}
+	c.JSON(http.StatusOK, todos)
 }
