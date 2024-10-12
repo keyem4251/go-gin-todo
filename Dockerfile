@@ -3,6 +3,8 @@ FROM golang:1.23.2-alpine
 
 RUN go install github.com/air-verse/air@latest
 
+RUN apk add --no-cache git openssh curl
+
 # 作業ディレクトリを設定
 WORKDIR /workspace
 
